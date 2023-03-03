@@ -1,0 +1,19 @@
+SQLITE DATABASE
+
+CREATE TABLE holder(id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    first_name TEXT NOT NULL,
+                    last_name TEXT NOT NULL);
+
+INSERT INTO holder(first_name, last_name) VALUES
+                    ('Rintarou', 'Okabe'),
+                    ('Hitori', 'Gotoh');
+
+CREATE TABLE account(id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    acc_no TEXT NOT NULL, 
+                    balance REAL NOT NULL,
+                    holder INTEGER NOT NULL, 
+                    FOREIGN KEY(holder) REFERENCES holder(id));
+
+INSERT INTO account(acc_no, balance, holder) VALUES
+                    ('1337-420', 100, (SELECT id FROM holder WHERE first_name='Rintarou')),
+                    ('1337-690', 97.52, (SELECT id FROM holder WHERE first_name='Hitori'));
