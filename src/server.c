@@ -14,6 +14,12 @@ To compile:
     gcc server.c -o server -lsqlite3
 */
 
+/* 
+TODO:   remove returns to not crash the program when errors occur
+        fix nicer function for sending data back to client
+        
+*/
+
 int main(void){
     struct sockaddr_in server_info = {0};
     server_info.sin_family = AF_INET;
@@ -39,86 +45,114 @@ int main(void){
         return -1;
     }
 
-    // Listen for clients
-    if(0 > listen(sfd, 5)){
-        perror("listen");
-        return -1;
-    }
+    while(1){
 
-    printf("Listening for clients.\n");
+        // Listen for clients
+        if(0 > listen(sfd, 5)){
+            perror("listen");
+            return -1;
+        }
 
-    // accept connection 
-    int cfd = accept(sfd, (struct sockaddr *)&server_info, &client_info_len);
-    if(0 > cfd)
-    {
-        perror("accept");
-        return -1;
-    }
+        printf("Listening for clients.\n");
 
-    printf("Client connected.\n");
+        // accept connection 
+        int cfd = accept(sfd, (struct sockaddr *)&server_info, &client_info_len);
+        if(0 > cfd)
+        {
+            perror("accept");
+            return -1;
+        }
 
-    // recieve data from client
-    char client_data[256];
-    if(0 > recvfrom(cfd, client_data, sizeof(client_data), 0, (struct sockaddr *)&client_info, &client_info_len))
-    {
-        perror("recieve");
-        return -1;
-    }
+        printf("Client connected.\n");
 
-    printf("Received data from client:\n%s\n", client_data);
+        // recieve data from client
+        char client_data[256];
+        if(0 > recvfrom(cfd, client_data, sizeof(client_data), 0, (struct sockaddr *)&client_info, &client_info_len))
+        {
+            perror("recieve");
+            return -1;
+        }
 
-    // connect to database and stuff 
+        printf("Received data from client:\n%s\n", client_data);
 
-    sqlite3 *db;                // database connection
-    sqlite3_stmt *statement;    // statement object
-    int rc;                     // return code
+        // connect to database and stuff 
 
-    // open database connection
-    rc = sqlite3_open("test.db", &db);
-    if(rc != SQLITE_OK){
-        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return 1;
-    }
-    printf("Connected to database.\n");
+        sqlite3 *db;                // database connection
+        sqlite3_stmt *statement;    // statement object
+        int rc;                     // return code
 
-    // prepare SQL-statement
-    rc = sqlite3_prepare_v2(db, client_data, -1, &statement, 0);
-    if(rc != SQLITE_OK){
-        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        return 1;
-    }
-    printf("Prepared SQL-statement.\n");
+        // open database connection
+        rc = sqlite3_open("test.db", &db);
+        if(rc != SQLITE_OK){
+            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            return 1;
+        }
+        printf("Connected to database.\n");
 
-    // evaluate SQL-statement
-    rc = sqlite3_step(statement);
-    if(rc != SQLITE_DONE){
-        fprintf(stderr, "Failed to evaluate statement: %s\n", sqlite3_errmsg(db));
+        // prepare SQL-statement
+        rc = sqlite3_prepare_v2(db, client_data, -1, &statement, 0);
+        if(rc != SQLITE_OK){
+            fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+            sqlite3_close(db);
+            return 1;
+        }
+        printf("Prepared SQL-statement.\n");
+
+        const unsigned char *username;
+        const unsigned char *password;
+        char *space = " "; // first solution to be able to separate credentials on the client side
+
+        // evaluate SQL-statement. test for retreiving login credentials from db
+        rc = sqlite3_step(statement);
+        if(rc == SQLITE_ROW){
+            username = sqlite3_column_text(statement, 0);
+            password = sqlite3_column_text(statement, 1);
+            printf("Username: %s\n", username);
+            printf("Password: %s\n", password);
+            if(0 > send(cfd, (void *)username, strlen((const char *)username), 0))
+            {
+                perror("send");
+                return -1;
+            }
+            if(0 > send(cfd, (void *)space, strlen(space), 0))
+            {
+                perror("send");
+                return -1;
+            }
+            if(0 > send(cfd, (void *)password, strlen((const char *)password), 0))
+            {
+                perror("send");
+                return -1;
+            }
+        }
+        else if(rc == SQLITE_DONE){
+            char *response = "Transfer complete!\n";
+            if(0 > send(cfd, (void *)response, strlen(response), 0))
+            {
+                perror("send");
+                return -1;
+            }
+        }
+        else if(rc != SQLITE_DONE){
+            fprintf(stderr, "Failed to evaluate statement: %s\n", sqlite3_errmsg(db));
+            sqlite3_finalize(statement);
+            sqlite3_close(db);
+            return 1;
+        }
+        
+        printf("Statement successfully evaluated.\n");
+        printf("Sent response to client.\n");
+
+        // destroy statement
         sqlite3_finalize(statement);
+
+        // close connection to db. Add errorchecks?
         sqlite3_close(db);
-        return 1;
+
+        // close socket
+        close(cfd);
+        
+        printf("Closed connection to client.\n");
     }
-    printf("Statement successfully evaluated.\n");
-
-    // destroy statement
-    sqlite3_finalize(statement);
-
-    // close connection to db. TODO: add errorchecks?
-    sqlite3_close(db);
-
-    //send data back
-    char *response = "Transfer complete!\n";
-    if(0 > send(cfd, (void *)response, strlen(response), 0))
-    {
-        perror("send");
-        return -1;
-    }
-
-    printf("Sent response to client.\n");
-
-    // close socket
-    close(cfd);
-    
-    printf("Closed connection to client.\n");
 }
