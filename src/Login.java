@@ -51,7 +51,6 @@ public class Login extends JFrame implements ActionListener {
 		button.addActionListener(this);
 
 		feedback = new JLabel();
-		feedback.setBounds(5, 150, 260, 25);
 		panel.add(feedback);
 
 		this.revalidate();
@@ -77,9 +76,11 @@ public class Login extends JFrame implements ActionListener {
 		System.out.println(resultServer);
 		String[] credentials = resultServer.split(" ");
 		if(Objects.equals(credentials[0], username) && Objects.equals(credentials[1], stringPass)) {
+			feedback.setBounds(80, 160, 260, 25);
 			feedback.setText("Login successful!");
 		}
 		else {
+			feedback.setBounds(7, 160, 260, 25);
 			feedback.setText("Wrong username or password. Try again.");
 		}
 	}
