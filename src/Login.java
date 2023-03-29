@@ -78,6 +78,10 @@ public class Login extends JFrame implements ActionListener {
 		if(Objects.equals(credentials[0], username) && Objects.equals(credentials[1], stringPass)) {
 			feedback.setBounds(80, 160, 260, 25);
 			feedback.setText("Login successful!");
+			this.setVisible(false);
+			TransferPage transferPage = new TransferPage();
+			repaint();
+			revalidate();
 		}
 		else {
 			feedback.setBounds(7, 160, 260, 25);
