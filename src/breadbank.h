@@ -1,4 +1,7 @@
-sqlite3 *db;    // database connection
-int rc;         // return codes for sqlite3 queries
+/* Related to the sqlite3 interface */
+sqlite3 *db;                
+sqlite3_stmt *statement;
+int rc;
 
 void login(char*);
+void get_account_details(char* query);
