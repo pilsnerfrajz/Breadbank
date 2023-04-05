@@ -13,7 +13,7 @@
 **  To compile: 
 **  install sqlite3
 **  run sudo apt-get install libsqlite3-dev
-**  gcc server.c -o server -lsqlite3
+**  gcc login.c server.c -o server -lsqlite3
 */
 
 int main(void){
@@ -27,7 +27,7 @@ int main(void){
     socklen_t client_info_len = sizeof(client_info);
 
     // Create socket
-    int sfd = socket(AF_INET, SOCK_STREAM, 0);
+    sfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sfd < 0) {
         perror("socket");
         return -1;
@@ -35,23 +35,23 @@ int main(void){
 
     // Bind to port
     if(0 > bind(sfd, (struct sockaddr *)&server_info, sizeof(server_info))) {
-        perror("bind");
+        perror("Bind");
         return -1;
     }
 
     while(1) {
         // Listen for clients
         if(0 > listen(sfd, 5)) {
-            perror("listen");
+            perror("Listen");
             return -1;
         }
 
         printf("Listening for clients.\n");
 
         // accept connection 
-        int cfd = accept(sfd, (struct sockaddr *)&server_info, &client_info_len);
+        cfd = accept(sfd, (struct sockaddr *)&server_info, &client_info_len);
         if(0 > cfd) {
-            perror("accept");
+            perror("Accept");
             return -1;
         }
 
@@ -60,7 +60,7 @@ int main(void){
         // recieve data from client
         char client_data[256];
         if(0 > recvfrom(cfd, client_data, sizeof(client_data), 0, (struct sockaddr *)&client_info, &client_info_len)) {
-            perror("recieve");
+            perror("Recieve");
             return -1;
         }
 
@@ -82,29 +82,17 @@ int main(void){
         for(int i = 0; i < sizeof(client_data); i++) {
             queries[i] = client_data[index++];
         }
-        /*
-        if((strcmp(method, lgn) == 0)){
+
+        if((strcmp(method, lgn) == 0)) {
             printf("Method is LOGIN\n");
+            login(queries);
         } else if((strcmp(method, trnsfr) == 0)){
             printf("Method is TRANSFER\n");
         } else{
             printf("Bad request!\n");
         }
-        */
 
-        // open database connection
-        rc = sqlite3_open("/Users/williamhedenskog/test.db", &db);
-        if(rc != SQLITE_OK) {
-            fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-            sqlite3_close(db);
-            return 1;
-        }
-        printf("Connected to database.\n");
 
-        if((strcmp(method, lgn) == 0)) {
-            printf("Method is LOGIN\n");
-            login(queries);
-        }
 /*
         const char* pzTail = "";
         const char* comp = "";
@@ -179,6 +167,7 @@ int main(void){
         // close connection to db. Add errorchecks?
         sqlite3_close(db);
 */
+        sqlite3_close(db);
 
         // close socket
         close(cfd);
