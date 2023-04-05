@@ -9,6 +9,23 @@
 #include <sqlite3.h>
 #include "breadbank.h"
 
+void send_account_details(char* to_client) {
+    char *space = " ";
+    if(0 > send(cfd, (void *)to_client, strlen(to_client), 0)) {
+        perror("Send");
+        sqlite3_finalize(statement);
+        sqlite3_close(db);
+        exit(0);
+    }
+     if(0 > send(cfd, (void *)space, strlen(space), 0)) {
+        perror("Send");
+        sqlite3_finalize(statement);
+        sqlite3_close(db);
+        exit(0);
+    }
+    return;
+}
+
 void get_account_details(char* query) {
         // prepare SQL-statement
         rc = sqlite3_prepare_v2(db, query, -1, &statement, 0);
@@ -26,6 +43,9 @@ void get_account_details(char* query) {
             balance = sqlite3_column_text(statement, 2);
             printf("Acc: %s\n", account_number);
             printf("Balance: %s\n", balance);
+
+            send_account_details((char*) account_number);
+            send_account_details((char*) balance);
         }
         sqlite3_finalize(statement);
         return;
@@ -64,9 +84,8 @@ void login(char* query) {
             sqlite3_finalize(statement);
             get_account_details(account_query);
         } else {
-            printf("Wrong username or password!\n");
+            printf("Wrong username or password!\n"); // SEND TO CLIENT
             sqlite3_finalize(statement);
         }
-        sqlite3_close(db);
         return;
 }
