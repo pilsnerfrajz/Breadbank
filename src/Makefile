@@ -6,8 +6,8 @@ DEPS = breadbank.h
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-server: login.o server.o
-	$(CC) login.o server.o -o server $(LIBS)
+server: transfer.o login.o server.o
+	$(CC) transfer.o login.o server.o -o server $(LIBS)
 
 .PHONY: clean
 
