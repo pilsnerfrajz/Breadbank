@@ -9,3 +9,4 @@ int cfd;
 
 /* Functions */
 void login(char*);
+void transfer(char*);
