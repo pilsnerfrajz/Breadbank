@@ -88,6 +88,7 @@ int main(void){
             login(queries);
         } else if((strcmp(method, trnsfr) == 0)){
             printf("Method is TRANSFER\n");
+            transfer(queries);
         } else{
             printf("Bad request!\n");
         }
