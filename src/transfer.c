@@ -9,6 +9,32 @@
 #include <sqlite3.h>
 #include "breadbank.h"
 
+void get_holder_id(char* query) {
+    rc = sqlite3_prepare_v2(db, query, -1, &statement, 0);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(0);
+    }
+
+    const unsigned char *holder_col;
+
+    rc = sqlite3_step(statement);
+    if(rc == SQLITE_ROW) {
+        holder_col = sqlite3_column_text(statement, 3);
+        char copy_id[10] = "";
+        strcat(copy_id, (const char*)holder_col);
+
+        sqlite3_finalize(statement);
+        get_account_details(copy_id);
+    } else {
+        printf("Wrong username or password!\n"); // SEND TO CLIENT
+        sqlite3_finalize(statement);
+    }
+    
+    return;
+}
+
 void exec_transfer(char* query) {
     char* comp = "";
     if(strcmp(query, comp) == 0)
@@ -34,7 +60,6 @@ void exec_transfer(char* query) {
         sqlite3_close(db);
         exit(0);
     }
-    return;
 }
 
 int comp_balance(char* query, char* transfer_sum) {
@@ -56,7 +81,7 @@ int comp_balance(char* query, char* transfer_sum) {
     
     rc = sqlite3_step(statement);
     if(rc == SQLITE_ROW) {
-        current_balance = sqlite3_column_text(statement, 0);
+        current_balance = sqlite3_column_text(statement, 2);
     }
 
     char to_float[100];
@@ -85,7 +110,7 @@ void transfer(char* query) {
     const char delim2 = '\'';
     char* ret1;
     char* ret2;
-    char sum[20];
+    char sum[50];
     char acc[20];
 
     ret1 = strchr((const char *)query, delim1);
@@ -104,12 +129,15 @@ void transfer(char* query) {
     }
     acc[i] = '\0';
 
-    char check_bal[70] = "SELECT balance FROM account WHERE account_number=";
-    strcat(check_bal, acc);
-    int enough_balance = comp_balance(check_bal, sum);
+    char select_query[150] = "SELECT * FROM account WHERE account_number=";
+    strcat(select_query, acc);
+    int enough_balance = comp_balance(select_query, sum);
 
     if(enough_balance) {
         exec_transfer(query);
+        //int holder_id = 
+        get_holder_id(select_query);
+        //get_account_details((char*)holder_id);
     } else {
         // send error to client
         printf("NOT ENOUGH MONEY\n");
