@@ -9,7 +9,42 @@
 #include <sqlite3.h>
 #include "breadbank.h"
 
+void exec_transfer(char* query) {
+    char* comp = "";
+    if(strcmp(query, comp) == 0)
+        return;
+    
+    // contains remaining query
+    const char* pzTail;
+
+    rc = sqlite3_prepare_v2(db, query, -1, &statement, &pzTail);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(0);
+    }
+
+    rc = sqlite3_step(statement);
+    if(rc == SQLITE_DONE) {
+        sqlite3_finalize(statement);
+        exec_transfer((char*)pzTail);
+    } else if(rc != SQLITE_DONE) {
+        fprintf(stderr, "Failed to evaluate statement: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(statement);
+        sqlite3_close(db);
+        exit(0);
+    }
+    return;
+}
+
 int comp_balance(char* query, char* transfer_sum) {
+    rc = sqlite3_open("/Users/williamhedenskog/breadbank.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        exit(0);
+    }
+
     rc = sqlite3_prepare_v2(db, query, -1, &statement, 0);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
@@ -45,7 +80,6 @@ int comp_balance(char* query, char* transfer_sum) {
 }
 
 void transfer(char* query) {
-
     /* First check if account has enough money */
     const char delim1 = '-';
     const char delim2 = '\'';
@@ -72,14 +106,13 @@ void transfer(char* query) {
 
     char check_bal[70] = "SELECT balance FROM account WHERE account_number=";
     strcat(check_bal, acc);
-
     int enough_balance = comp_balance(check_bal, sum);
 
-    /* Do transfer if account has enough money */
-    if(enough_balance == 1) {
-        // query
+    if(enough_balance) {
+        exec_transfer(query);
     } else {
-        // send error
+        // send error to client
+        printf("NOT ENOUGH MONEY\n");
     }
     return;
 }
