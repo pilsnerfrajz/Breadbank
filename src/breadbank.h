@@ -10,3 +10,5 @@ int cfd;
 /* Functions */
 void login(char*);
 void transfer(char*);
+void get_account_details(char*);
+void get_holder_id(char*);
