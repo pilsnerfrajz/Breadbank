@@ -11,4 +11,4 @@ int cfd;
 void login(char*);
 void transfer(char*);
 void get_account_details(char*);
-void get_holder_id(char*);
+void get_holder_send_info(char*);

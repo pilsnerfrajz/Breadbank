@@ -9,7 +9,7 @@
 #include <sqlite3.h>
 #include "breadbank.h"
 
-void get_holder_id(char* query) {
+void get_holder_send_info(char* query) {
     rc = sqlite3_prepare_v2(db, query, -1, &statement, 0);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
@@ -135,9 +135,7 @@ void transfer(char* query) {
 
     if(enough_balance) {
         exec_transfer(query);
-        //int holder_id = 
-        get_holder_id(select_query);
-        //get_account_details((char*)holder_id);
+        get_holder_send_info(select_query);
     } else {
         // send error to client
         printf("NOT ENOUGH MONEY\n");
