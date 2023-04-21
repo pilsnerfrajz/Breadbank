@@ -3,7 +3,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
+
+// TODO: Find better solution than to set window invisible when moving to transfer page
+// TODO: Look up prepared statement
 
 public class Login extends JFrame implements ActionListener {
 	private JLabel userName;
@@ -61,27 +65,25 @@ public class Login extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e){
 		String username = userField.getText();
 		char[] password = passwordField.getPassword();
-		String stringPass = new String(password); // fix to not reveal password as string?
+		String stringPass = new String(password);
 
 		TCPClient tcpClient = new TCPClient();
-		String q = "SELECT * FROM login WHERE username='" + username + "' AND password='" + stringPass + "';";
+		String q = "LOGIN SELECT * FROM login WHERE username='" + username + "' AND password='" + stringPass + "';\0";
 
 		byte[] fromServer;
 		try {
-			fromServer = tcpClient.query("192.168.1.100", 1337, q.getBytes());
+			fromServer = tcpClient.query("LOCALHOST", 1337, q.getBytes());
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
 		String resultServer = new String(fromServer);
 		System.out.println(resultServer);
-		String[] credentials = resultServer.split(" ");
-		if(Objects.equals(credentials[0], username) && Objects.equals(credentials[1], stringPass)) {
+		if(!resultServer.equals("")) {
+			String[] accountInfo = resultServer.split(" ");
 			feedback.setBounds(80, 160, 260, 25);
 			feedback.setText("Login successful!");
 			this.setVisible(false);
-			TransferPage transferPage = new TransferPage();
-			repaint();
-			revalidate();
+			TransferPage transferPage = new TransferPage(accountInfo);
 		}
 		else {
 			feedback.setBounds(7, 160, 260, 25);
