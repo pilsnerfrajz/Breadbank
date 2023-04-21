@@ -35,7 +35,7 @@ public class TransferPage extends JFrame  {
 		}
 
 		accountList = new JComboBox<>(accountToComboBox);
-		accountList.setBounds(100, 10, 200, 25);
+		accountList.setBounds(100, 10, 250, 25);
 		panel.add(accountList);
 
 
@@ -44,7 +44,7 @@ public class TransferPage extends JFrame  {
 		panel.add(acc2Label);
 
 		acc2Field = new JTextField();
-		acc2Field.setBounds(100, 50, 200, 25);
+		acc2Field.setBounds(100, 50, 250, 25);
 		panel.add(acc2Field);
 
 		transferAmount = new JLabel("Amount");
@@ -52,11 +52,11 @@ public class TransferPage extends JFrame  {
 		panel.add(transferAmount);
 
 		transferAmountField = new JTextField();
-		transferAmountField.setBounds(100, 90, 200, 25);
+		transferAmountField.setBounds(100, 90, 250, 25);
 		panel.add(transferAmountField);
 
 		transferButton = new JButton("Transfer");
-		transferButton.setBounds(122, 130, 100, 25);
+		transferButton.setBounds(122, 130, 150, 25);
 		panel.add(transferButton);
 		transferButton.addActionListener(new ActionListener() {
 			@Override
@@ -77,9 +77,13 @@ public class TransferPage extends JFrame  {
 					byte[] toServer = transferString.getBytes();
 					byte[] serverBytes = tcpClient.query("LOCALHOST", 1337, toServer);
 					String serverOutput = new String(serverBytes);
-					System.out.println(serverOutput);
-					setComboBox(serverOutput);
-					transferButton.setText("Sent!");
+					if(!serverOutput.equals("")) {
+						System.out.println(serverOutput);
+						setComboBox(serverOutput);
+						transferButton.setText("Transfer complete!");
+					} else {
+						transferButton.setText("Error, try again!");
+					}
 				} catch (IOException ex) {
 					throw new RuntimeException(ex);
 				}
