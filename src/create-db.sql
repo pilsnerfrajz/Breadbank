@@ -29,7 +29,8 @@ INSERT INTO account
     ('1337-314', 500, (SELECT id FROM holder WHERE first_name='William')),
     ('1337-420', 2000, (SELECT id FROM holder WHERE first_name='William')),
     ('1337-069', 1000, (SELECT id FROM holder WHERE first_name='Pontus')),
-    ('1337-666', 1000, (SELECT id FROM holder WHERE first_name='Hugo'));
+    ('1337-666', 1000, (SELECT id FROM holder WHERE first_name='Hugo')),
+    ('1337-999', 1000, (SELECT id FROM holder WHERE first_name='Hugo'));
 
 INSERT INTO login
     (username, password, holder) VALUES
