@@ -63,36 +63,7 @@ void login(char* query) {
         exit(0);
     }
     printf("Connected to database.\n");
-/*
-    const unsigned char *holder_id;
-    //char account_query[50] = "SELECT * FROM account WHERE holder=";
-    //char semicolon[2] = ";";
 
-    // prepare SQL-statement
-    rc = sqlite3_prepare_v2(db, query, -1, &statement, 0);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
-        exit(0);
-    }
-    printf("Prepared SQL-statement.\n");
-
-    // evaluate SQL-statement
-    rc = sqlite3_step(statement);
-    if(rc == SQLITE_ROW) {
-        holder_id = sqlite3_column_text(statement, 3);
-        char copy_id[10] = "";
-        //strcat(account_query, (const char*)holder_id);
-        //strcat(account_query, semicolon);
-        //printf("%s\n", account_query);
-        strcat(copy_id, (const char*)holder_id);
-        sqlite3_finalize(statement);
-        get_account_details(copy_id);//account_query);
-    } else {
-        printf("Wrong username or password!\n"); // SEND TO CLIENT
-        sqlite3_finalize(statement);
-    }
-    */
     get_holder_send_info(query);
     return;
 }
