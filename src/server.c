@@ -13,7 +13,7 @@
 **  To compile: 
 **  install sqlite3
 **  run sudo apt-get install libsqlite3-dev
-**  gcc login.c server.c -o server -lsqlite3
+**  run make
 */
 
 int main(void){
