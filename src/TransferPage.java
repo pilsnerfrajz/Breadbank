@@ -94,6 +94,7 @@ public class TransferPage extends JFrame  {
 
 	public void setComboBox(String resultServer){
 		String[] accountInfo = resultServer.split(" ");
+		int selectedIndex = accountList.getSelectedIndex();
 		accountList.removeAllItems();
 		int k = 0;
 		for(int i = 0; i < accountToComboBox.length; i++) {
@@ -101,6 +102,7 @@ public class TransferPage extends JFrame  {
 			k = k + 2;
 		}
 		System.out.println(Arrays.toString(accountToComboBox));
+		accountList.setSelectedIndex(selectedIndex);
 		this.revalidate();
 		this.repaint();
 	}
